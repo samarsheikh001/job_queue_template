@@ -1,16 +1,15 @@
 import subprocess
-from utils.to_ckpt import convert_model
-from utils.upload import upload_file_to_s3
-from utils.utils import delete_file_or_folder, download_and_extract_zip, generate_identifier
+from worker.utils.upload import upload_file_to_s3
+
+from worker.utils.utils import delete_file_or_folder, download_and_extract_zip, generate_identifier
+from worker.utils.to_ckpt import convert_model
 
 
-def prepare_model(model_data: dict, model_id: str, job_id: str) -> str:
-    subject_type = model_data["subject_type"]
+def prepare_model(subject_type, images_zip) -> str:
     instance_prompt = "a photo of a person" if subject_type == "person" else "Unknown subject type"
     subject_identifier = generate_identifier()
-    if model_data["images_zip"]:
-        download_and_extract_zip(
-            model_data["images_zip"], extract_to=subject_identifier)
+    download_and_extract_zip(
+        images_zip, extract_to=f"temp/{subject_identifier}")
     return subject_identifier, instance_prompt
 
 
@@ -18,10 +17,10 @@ def train_model(base_model_name: str, subject_identifier: str, instance_prompt: 
     cmd = [
         "accelerate",
         "launch",
-        "train_dreambooth.py",
+        "worker/train_dreambooth.py",
         "--pretrained_model_name_or_path", base_model_name,
-        "--instance_data_dir", subject_identifier,
-        "--output_dir", "output",
+        "--instance_data_dir", f"temp/{subject_identifier}",
+        "--output_dir", "temp/output",
         "--instance_prompt", f"{instance_prompt} {subject_identifier}",
         "--resolution", "512",
         "--train_batch_size", "1",
@@ -35,13 +34,8 @@ def train_model(base_model_name: str, subject_identifier: str, instance_prompt: 
 
 
 def cleanup(subject_identifier: str, steps: int):
-    convert_model(f"output/{steps}", f"{subject_identifier}.ckpt", True)
-    upload_file_to_s3(f"{subject_identifier}.ckpt",
+    convert_model(f"temp/output/{steps}",
+                  f"temp/{subject_identifier}.ckpt", True)
+    upload_file_to_s3(f"temp/{subject_identifier}.ckpt",
                       f"{subject_identifier}.ckpt")
-    delete_file_or_folder(subject_identifier)  # Delete images folder
-    delete_file_or_folder("output")
-    delete_file_or_folder(f"{subject_identifier}.ckpt")
-
-
-# train_model("runwayml/stable-diffusion-v1-5",
-#             "faizan", "a photo of a person", 400)
+    delete_file_or_folder("temp")  # Delete temp folder

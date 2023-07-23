@@ -11,3 +11,4 @@ python-dotenv
 flask
 redis
 celery
+flask_celeryext

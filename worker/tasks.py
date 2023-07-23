@@ -1,13 +1,32 @@
+import os
 from celery import shared_task
 from celery.signals import task_postrun, task_prerun
 import requests
+from dotenv import load_dotenv
+load_dotenv()
+# extract worker dependencies
+if os.getenv('CELERY_ENV') != 'server':
+    from .model_training import cleanup, prepare_model, train_model
 
 
 @shared_task
-def run(a=None, b=None, webhook_url=None):
-    import time
-    time.sleep(5)
-    return a / b
+def run(steps=None, base_model_name=None, subject_type=None, images_zip=None, webhook_url=None):
+    if os.getenv('CELERY_ENV') != 'server':
+        try:
+            if not os.path.exists('temp'):
+                os.makedirs('temp')
+            subject_identifier, instance_prompt = prepare_model(
+                subject_type=subject_type, images_zip=images_zip)
+            train_model(base_model_name, subject_identifier,
+                        instance_prompt, steps)
+            cleanup(subject_identifier, steps)
+            return subject_identifier
+
+        except Exception as e:
+            print(f"Error encountered: {e}")
+            return {"error": 1}
+    else:
+        return {}
 
 
 @task_prerun.connect
@@ -45,3 +64,13 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
             'Request to webhook returned an error %s, the response is:\n%s'
             % (response.status_code, response.text)
         )
+
+
+# # test
+# run(
+#     steps=100,
+#     base_model_name="runwayml/stable-diffusion-v1-5",
+#     subject_type="person",
+#     images_zip="https://firebasestorage.googleapis.com/v0/b/copykitties-avatar.appspot.com/o/bhumika_aurora.zip?alt=media&token=d0fe3b22-6a59-43e5-ab73-901c60bf0bfe",
+#     webhook_url="http://127.0.0.1:8000/webhook"
+# )

@@ -19,7 +19,7 @@ def generate_identifier():
     return identifier
 
 
-def download_and_extract_zip(url, extract_to='.'):
+def download_and_extract_zip(url, extract_to='temp'):
     print(f"Downloading and extracting zip file from {url}")
     response = requests.get(url)
     with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
