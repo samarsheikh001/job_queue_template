@@ -10,7 +10,7 @@ RUN echo -n $HUGGINGFACE_TOKEN > ~/.huggingface/token
 RUN apt-get update && apt-get install -y git wget && rm -rf /var/lib/apt/lists/*
 
 # Clone the repository
-RUN git clone https://github.com/samarsheikh001/celery-handler.git .
+RUN git clone -b run-dreambooth https://github.com/samarsheikh001/job_queue_template .
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r worker/requirements.txt
@@ -19,4 +19,4 @@ RUN pip install --no-cache-dir -r worker/requirements.txt
 ENV PYTHONUNBUFFERED 1
 
 # Run celery worker when the container launches
-CMD ["celery", "-A", "make_celery", "worker", "--loglevel", "INFO", "-c", "1"]
+CMD ["celery", "-A", "app.celery", "worker", "--loglevel", "INFO", "-c", "1"]
