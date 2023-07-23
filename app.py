@@ -29,10 +29,8 @@ def get_status(task_id):
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.get_json()  # get the incoming JSON structure
-
     # do something with the data here, like print it to console:
     print(data)
-
     # return a response
     return jsonify({'response': 'Webhook received'}), 200
 

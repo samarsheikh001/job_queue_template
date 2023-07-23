@@ -5,3 +5,5 @@ flower==1.2.0
 Flask-CeleryExt==0.4.3
 watchfiles==0.18.1
 python-dotenv
+gunicorn
+requests
