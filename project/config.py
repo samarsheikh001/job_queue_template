@@ -14,7 +14,7 @@ class BaseConfig:
     CELERY_ACKS_LATE = True
     CELERY_TASK_TRACK_STARTED = True
     CELERYD_PREFETCH_MULTIPLIER = 1
-    CELERY_TASK_ALWAYS_EAGER = True
+    # CELERY_TASK_ALWAYS_EAGER = True
 
 
 class DevelopmentConfig(BaseConfig):
