@@ -1,7 +1,9 @@
 version: '3'
 services:
   flask-server:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile_flask
     ports:
       - '8000:8000'
     environment:
