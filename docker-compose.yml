@@ -11,6 +11,7 @@ services:
   flower:
     image: mher/flower
     environment:
+      - FLOWER_UNAUTHENTICATED_API=True
       - CELERY_BROKER_URL=redis://host.docker.internal:6379/0
     command: celery flower --port=5555
     ports:

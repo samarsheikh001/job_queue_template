@@ -1,1 +1,1 @@
-celery -A app.celery worker --loglevel=info
+celery -A app.celery worker --loglevel=info --hostname=custom_worker_name@%h
