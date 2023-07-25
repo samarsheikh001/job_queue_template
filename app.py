@@ -22,8 +22,11 @@ def start_task():
 
 @app.route('/task/<task_id>', methods=['GET'])
 def get_status(task_id):
-    task = celery.AsyncResult(task_id)
-    return jsonify({'task_status': task.status, 'task_result': task.result}), 200
+    try:
+        task = celery.AsyncResult(task_id)
+        return jsonify({'task_status': task.status, 'task_result': task.result}), 200
+    except Exception as e:
+        return jsonify({'task_status': "FAILED", 'task_result': str(e)}), 200
 
 
 @app.route('/webhook', methods=['POST'])

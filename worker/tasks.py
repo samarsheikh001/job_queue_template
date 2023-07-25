@@ -1,7 +1,9 @@
 import os
+import time
 from celery import shared_task
 from celery.signals import task_postrun, task_prerun
 import requests
+from flask import jsonify
 from dotenv import load_dotenv
 load_dotenv()
 # extract worker dependencies
@@ -13,6 +15,7 @@ if os.getenv('CELERY_ENV') != 'server':
 def run(steps=None, base_model_name=None, subject_type=None, images_zip=None, webhook_url=None):
     if os.getenv('CELERY_ENV') != 'server':
         try:
+            start_time = time.time()
             if not os.path.exists('temp'):
                 os.makedirs('temp')
             subject_identifier, instance_prompt = prepare_model(
@@ -20,13 +23,18 @@ def run(steps=None, base_model_name=None, subject_type=None, images_zip=None, we
             train_model(base_model_name, subject_identifier,
                         instance_prompt, steps)
             cleanup(subject_identifier, steps)
-            return subject_identifier
+            end_time = time.time()
+            execution_time = end_time - start_time
+            return jsonify({"subject_identifier": subject_identifier, "executionTime": execution_time})
 
         except Exception as e:
             print(f"Error encountered: {e}")
             return {"error": 1}
     else:
-        return {}
+        start_time = time.time()
+        end_time = time.time()
+        execution_time = end_time - start_time
+        return execution_time
 
 
 @task_prerun.connect
