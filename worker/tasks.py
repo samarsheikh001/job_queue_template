@@ -1,7 +1,7 @@
 import os
 import time
 from celery import shared_task
-from celery.signals import task_postrvun, task_prerun
+from celery.signals import task_postrun, task_prerun
 import requests
 from dotenv import load_dotenv
 load_dotenv()
