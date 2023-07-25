@@ -8,14 +8,14 @@ services:
       - '8000:8000'
     environment:
       - CELERY_ENV=server
-      - CELERY_BROKER_URL=redis://host.docker.internal:6379/0
-      - CELERY_RESULT_BACKEND=redis://host.docker.internal:6379/0
+      - CELERY_BROKER_URL=rediss://default:AVNS_WP_JAnOOWTPPRbTJ_Wp@private-db-redis-nyc1-29804-do-user-14416720-0.b.db.ondigitalocean.com:25061/0?ssl_cert_req=CERT_REQUIRED
+      - CELERY_RESULT_BACKEND=rediss://default:AVNS_WP_JAnOOWTPPRbTJ_Wp@private-db-redis-nyc1-29804-do-user-14416720-0.b.db.ondigitalocean.com:25061/0?ssl_cert_req=CERT_REQUIRED
 
   flower:
     image: mher/flower
     environment:
       - FLOWER_UNAUTHENTICATED_API=True
-      - CELERY_BROKER_URL=redis://host.docker.internal:6379/0
+      - CELERY_BROKER_URL=rediss://default:AVNS_WP_JAnOOWTPPRbTJ_Wp@private-db-redis-nyc1-29804-do-user-14416720-0.b.db.ondigitalocean.com:25061/0?ssl_cert_req=CERT_REQUIRED
     command: celery flower --port=5555
     ports:
       - '5555:5555'
