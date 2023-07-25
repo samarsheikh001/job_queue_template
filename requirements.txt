@@ -3,6 +3,7 @@ flower==1.2.0
 Flask-CeleryExt==0.4.3
 celery
 redis
+celery[redis]
 python-dotenv
 gunicorn
 requests

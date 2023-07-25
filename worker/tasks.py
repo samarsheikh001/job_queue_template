@@ -27,7 +27,7 @@ def run(steps=None, base_model_name=None, subject_type=None, images_zip=None, we
             return {"subject_identifier": subject_identifier, "executionTime": execution_time}
 
         except Exception as e:
-            print(f"Error encountered: {e}")
+            print(f"Error encounteredd: {e}")
             return {"error": str(e)}
     else:
         start_time = time.time()
