@@ -1,9 +1,8 @@
 import os
 import time
 from celery import shared_task
-from celery.signals import task_postrun, task_prerun
+from celery.signals import task_postrvun, task_prerun
 import requests
-from flask import jsonify
 from dotenv import load_dotenv
 load_dotenv()
 # extract worker dependencies
@@ -25,11 +24,11 @@ def run(steps=None, base_model_name=None, subject_type=None, images_zip=None, we
             cleanup(subject_identifier, steps)
             end_time = time.time()
             execution_time = end_time - start_time
-            return jsonify({"subject_identifier": subject_identifier, "executionTime": execution_time})
+            return {"subject_identifier": subject_identifier, "executionTime": execution_time}
 
         except Exception as e:
             print(f"Error encountered: {e}")
-            return {"error": 1}
+            return {"error": str(e)}
     else:
         start_time = time.time()
         end_time = time.time()
