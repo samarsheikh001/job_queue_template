@@ -25,7 +25,6 @@ def run(steps=None, base_model_name=None, subject_type=None, images_zip=None, we
         end_time = time.time()
         execution_time = end_time - start_time
         return {"subject_identifier": subject_identifier, "executionTime": execution_time}
-
     else:
         start_time = time.time()
         end_time = time.time()
@@ -38,7 +37,7 @@ def task_prerun_handler(sender=None, task_id=None, task=None, args=None, kwargs=
     # Extract webhook_url from the task keyword arguments
     webhook_url = kwargs.get('webhook_url')
     data = {"text": "Task started.",
-            "result": None, "state": "Started"}
+            "result": None, "state": "Started", "task_id": task_id}
 
     try:
         requests.post(webhook_url, json=data)
@@ -51,17 +50,19 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
     # Extract webhook_url from the task keyword arguments
     webhook_url = kwargs.get('webhook_url')
 
+    print("Task Postrun")
     print("Return value :", type(retval))
+    print("State :", state)
 
     if isinstance(retval, BaseException):
         print("An error occurred during task execution")
         # Hit the webhook
         data = {"text": "Task failed.",
-                "result": str(retval), "state": state}
+                "result": str(retval), "state": state, "task_id": task_id}
     else:
         # Hit the webhook
         data = {"text": "Task completed successfully.",
-                "result": retval, "state": state}
+                "result": retval, "state": state, "task_id": task_id}
 
     try:
         response = requests.post(webhook_url, json=data)
