@@ -13,8 +13,10 @@ class BaseConfig:
         "CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/0")
     CELERY_ACKS_LATE = True
     CELERY_TASK_TRACK_STARTED = True
+    CELERY_SEND_EVENTS = True
     CELERYD_PREFETCH_MULTIPLIER = 1
     # CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_REJECT_ON_WORKER_LOST = True
 
 
 class DevelopmentConfig(BaseConfig):
