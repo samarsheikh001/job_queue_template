@@ -19,4 +19,4 @@ RUN pip install --no-cache-dir -r worker/requirements.txt
 ENV PYTHONUNBUFFERED 1
 
 # Run celery worker when the container launches
-CMD ["celery", "-A", "app.celery", "worker", "--loglevel", "INFO", "-c", "1"]
+CMD ["celery", "-A", "app.celery", "worker", "--loglevel", "INFO", "-c", "1", "-Q", "$TASK_NAME"]

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-celery -A app.celery worker --loglevel=info -c 1
+celery -A app.celery worker --loglevel=info -c 1 -Q test
