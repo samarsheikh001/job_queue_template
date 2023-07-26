@@ -37,7 +37,7 @@ def task_prerun_handler(sender=None, task_id=None, task=None, args=None, kwargs=
     # Extract webhook_url from the task keyword arguments
     webhook_url = kwargs.get('webhook_url')
     data = {"text": "Task started.",
-            "result": None, "state": "Started", "task_id": task_id}
+            "result": None, "state": "STARTED", "task_id": task_id}
 
     try:
         requests.post(webhook_url, json=data)
