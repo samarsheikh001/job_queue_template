@@ -14,22 +14,18 @@ if os.getenv('CELERY_ENV') != 'server':
 @shared_task
 def run(steps=None, base_model_name=None, subject_type=None, images_zip=None, webhook_url=None):
     if os.getenv('CELERY_ENV') != 'server':
-        try:
-            start_time = time.time()
-            if not os.path.exists('temp'):
-                os.makedirs('temp')
-            subject_identifier, instance_prompt = prepare_model(
-                subject_type=subject_type, images_zip=images_zip)
-            train_model(base_model_name, subject_identifier,
-                        instance_prompt, steps)
-            cleanup(subject_identifier, steps)
-            end_time = time.time()
-            execution_time = end_time - start_time
-            return {"subject_identifier": subject_identifier, "executionTime": execution_time}
+        start_time = time.time()
+        if not os.path.exists('temp'):
+            os.makedirs('temp')
+        subject_identifier, instance_prompt = prepare_model(
+            subject_type=subject_type, images_zip=images_zip)
+        train_model(base_model_name, subject_identifier,
+                    instance_prompt, steps)
+        cleanup(subject_identifier, steps)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        return {"subject_identifier": subject_identifier, "executionTime": execution_time}
 
-        except Exception as e:
-            print(f"Error encounteredd: {e}")
-            return {"error": str(e)}
     else:
         start_time = time.time()
         end_time = time.time()
