@@ -3,6 +3,7 @@ import time
 from celery import shared_task
 from celery.signals import task_postrun, task_prerun
 import requests
+
 from dotenv import load_dotenv
 load_dotenv()
 # extract worker dependencies
@@ -43,7 +44,10 @@ def task_prerun_handler(sender=None, task_id=None, task=None, args=None, kwargs=
     data = {"text": "Task started.",
             "result": None, "state": "Started"}
 
-    requests.post(webhook_url, json=data)
+    try:
+        requests.post(webhook_url, json=data)
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send request: {e}")
 
 
 @task_postrun.connect
@@ -63,14 +67,14 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
         data = {"text": "Task completed successfully.",
                 "result": retval, "state": state}
 
-    response = requests.post(webhook_url, json=data)
-
-    # Handle the response if needed
-    if response.status_code != 200:
-        raise ValueError(
-            'Request to webhook returned an error %s, the response is:\n%s'
-            % (response.status_code, response.text)
-        )
+    try:
+        response = requests.post(webhook_url, json=data)
+        # Handle the response if needed
+        if response.status_code != 200:
+            print(
+                f'Error: Request to webhook returned an error {response.status_code}, the response is:\n{response.text}')
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send request: {e}")
 
 
 # # test

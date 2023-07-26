@@ -22,11 +22,15 @@ def start_task():
 
 @app.route('/task/<task_id>', methods=['GET'])
 def get_status(task_id):
-    try:
-        task = celery.AsyncResult(task_id)
-        return jsonify({'task_status': task.status, 'task_result': task.result}), 200
-    except Exception as e:
-        return jsonify({'task_status': "FAILED", 'task_result': str(e)}), 200
+    task = celery.AsyncResult(task_id)
+    if task.status == 'SUCCESS':
+        result = task.get()  # This will also remove the task result
+        return jsonify({'task_status': task.status, 'task_result': result}), 200
+    elif task.status == 'PENDING' or task.status == 'STARTED':
+        return jsonify({'task_status': task.status, 'task_result': 'Task is still processing'}), 200
+    else:
+        task.forget()  # This will remove the task result
+        return jsonify({'task_status': task.status, 'task_result': 'Task failed or unknown'}), 200
 
 
 @app.route('/webhook', methods=['POST'])
