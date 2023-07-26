@@ -11,12 +11,11 @@ celery = ext_celery.celery
 @app.route('/task', methods=['POST'])
 def start_task():
     data = request.get_json(force=True)  # Get JSON data from request
-    # task_name = data.get('task_name')  # Get the task name from the json data
+    task_name = data.get('task_name')  # Get the task name from the json data
 
     inputs = data.get('inputs', {})
 
-    # Start the task with the provided arguments
-    task = tasks.run.apply_async(kwargs=inputs)
+    task = celery.send_task(task_name, kwargs=inputs)
     return jsonify({'task_id': task.id}), 202
 
 

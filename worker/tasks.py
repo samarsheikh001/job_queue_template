@@ -11,7 +11,7 @@ if os.getenv('CELERY_ENV') != 'server':
     from .model_training import cleanup, prepare_model, train_model
 
 
-@shared_task
+@shared_task(name="train-dreambooth")
 def run(steps=None, base_model_name=None, subject_type=None, images_zip=None, webhook_url=None):
     if os.getenv('CELERY_ENV') != 'server':
         start_time = time.time()

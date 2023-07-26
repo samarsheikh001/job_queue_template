@@ -17,6 +17,7 @@ class BaseConfig:
     CELERYD_PREFETCH_MULTIPLIER = 1
     # CELERY_TASK_ALWAYS_EAGER = True
     CELERY_TASK_REJECT_ON_WORKER_LOST = True
+    # CELERY_ROUTES
 
 
 class DevelopmentConfig(BaseConfig):
