@@ -16,8 +16,11 @@ class BaseConfig:
     CELERY_SEND_EVENTS = True
     CELERYD_PREFETCH_MULTIPLIER = 1
     # CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_REJECT_ON_WORKER_LOST = True
-    # CELERY_ROUTES
+    # CELERY_TASK_REJECT_ON_WORKER_LOST = True
+    CELERY_ROUTES = {
+        "train-dreambooth": {'queue': 'dreambooth'},
+        "test": {'queue': 'test'},
+    }
 
 
 class DevelopmentConfig(BaseConfig):
