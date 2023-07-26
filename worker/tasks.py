@@ -16,6 +16,7 @@ def run_test(steps=None, base_model_name=None, subject_type=None, images_zip=Non
     start_time = time.time()
     end_time = time.time()
     execution_time = end_time - start_time
+    time.sleep(5)
     return {"task_name": "test", "execution_time": execution_time}
 
 
