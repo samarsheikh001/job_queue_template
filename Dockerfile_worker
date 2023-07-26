@@ -2,8 +2,8 @@ FROM pytorch/pytorch:latest
 
 WORKDIR /app
 
-RUN mkdir -p ~/.huggingface
 # Use the environment variable to write the token to the file
+RUN mkdir -p ~/.huggingface
 RUN echo -n $HUGGINGFACE_TOKEN > ~/.huggingface/token
 
 # Update system and install necessary system packages for git and wget
@@ -19,4 +19,4 @@ RUN pip install --no-cache-dir -r worker/requirements.txt
 ENV PYTHONUNBUFFERED 1
 
 # Run celery worker when the container launches
-CMD ["celery", "-A", "app.celery", "worker", "--loglevel", "INFO", "-c", "1", "-Q", "$TASK_NAME"]
+CMD celery -A app.celery worker --loglevel INFO -c 1 -Q ${TASK_NAME}
