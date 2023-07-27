@@ -9,11 +9,17 @@ RUN echo -n $HUGGINGFACE_TOKEN > ~/.huggingface/token
 # Update system and install necessary system packages for git and wget
 RUN apt-get update && apt-get install -y git wget && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get install python3-dev
+
 # Clone the repository
 RUN git clone -b run-dreambooth https://github.com/samarsheikh001/job_queue_template .
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r worker/requirements.txt
+
+RUN pip install -U autotrain-advanced
+
+RUN autotrain setup --update-torch
 
 # Set environment variable
 ENV PYTHONUNBUFFERED 1

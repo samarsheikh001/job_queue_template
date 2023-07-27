@@ -1,11 +1,4 @@
-git+https://github.com/ShivamShrirao/diffusers
-triton
-accelerate
 transformers
-ftfy
-natsort
-safetensors
-xformers
 boto3
 python-dotenv
 flask

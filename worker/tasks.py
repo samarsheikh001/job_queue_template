@@ -20,7 +20,7 @@ def run_test(steps=None, base_model_name=None, subject_type=None, images_zip=Non
     return {"task_name": "test", "execution_time": execution_time}
 
 
-@shared_task(name="train-dreambooth")
+@shared_task(name="train-sdxl-dreambooth")
 def run_dreambooth(steps=None, base_model_name=None, subject_type=None, images_zip=None, webhook_url=None):
     if os.getenv('CELERY_ENV') != 'server':
         start_time = time.time()
@@ -84,7 +84,7 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
 
 
 # # test
-# run(
+# run_dreambooth(
 #     steps=100,
 #     base_model_name="runwayml/stable-diffusion-v1-5",
 #     subject_type="person",
