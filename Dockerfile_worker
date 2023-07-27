@@ -7,9 +7,8 @@ RUN mkdir -p ~/.huggingface
 RUN echo -n $HUGGINGFACE_TOKEN > ~/.huggingface/token
 
 # Update system and install necessary system packages for git and wget
-RUN apt-get update && apt-get install -y git wget && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get install python3-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y git wget python3-dev build-essential libgl1-mesa-glx && rm -rf /var/lib/apt/lists/*
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
 # Clone the repository
 RUN git clone -b run-sdxl-dreambooth https://github.com/samarsheikh001/job_queue_template .
