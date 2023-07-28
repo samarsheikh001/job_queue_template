@@ -4,11 +4,7 @@ from celery.signals import task_postrun, task_prerun
 from celery import shared_task
 import time
 import os
-from worker.model_inferencing import generate_base_images, inference_model, refine_images
-from worker.utils.upload import download_file_from_s3
-
-from worker.utils.utils import delete_file_or_folder
-
+from worker.model_inferencing import inference_model
 
 # extract worker dependencies
 if os.getenv('CELERY_ENV') != 'server':
