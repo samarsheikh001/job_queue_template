@@ -46,7 +46,7 @@ def task_prerun_handler(sender=None, task_id=None, task=None, args=None, kwargs=
     # Extract webhook_url from the task keyword arguments
     webhook_url = kwargs.get('webhook_url')
     data = {"text": "Task started.",
-            "result": None, "state": "STARTED", "task_id": task_id}
+            "task_result": None, "task_status": "STARTED", "task_id": task_id}
 
     try:
         requests.post(webhook_url, json=data)
@@ -67,11 +67,11 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
         print("An error occurred during task execution")
         # Hit the webhook
         data = {"text": "Task failed.",
-                "result": str(retval), "state": state, "task_id": task_id}
+                "task_result": str(retval), "task_status": state, "task_id": task_id}
     else:
         # Hit the webhook
         data = {"text": "Task completed successfully.",
-                "result": retval, "state": state, "task_id": task_id}
+                "task_result": retval, "task_status": state, "task_id": task_id}
 
     try:
         response = requests.post(webhook_url, json=data)
