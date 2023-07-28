@@ -1,11 +1,15 @@
-import os
-import time
-from celery import shared_task
-from celery.signals import task_postrun, task_prerun
-import requests
 
-from dotenv import load_dotenv
-load_dotenv()
+import requests
+from celery.signals import task_postrun, task_prerun
+from celery import shared_task
+import time
+import os
+from worker.model_inferencing import generate_base_images, inference_model, refine_images
+from worker.utils.upload import download_file_from_s3
+
+from worker.utils.utils import delete_file_or_folder
+
+
 # extract worker dependencies
 if os.getenv('CELERY_ENV') != 'server':
     from .model_training import cleanup, prepare_model, train_model
@@ -39,6 +43,22 @@ def run_dreambooth(steps=None, base_model_name=None, subject_type=None, images_z
         end_time = time.time()
         execution_time = end_time - start_time
         return execution_time
+
+
+@shared_task(name="inference-sdxl")
+def run_inference(prompt=None, steps=None, num_of_images=None, model_id=None, width=None, height=None, base_model_name=None, webhook_url=None):
+    if os.getenv('CELERY_ENV') != 'server':
+        start_time = time.time()
+        images_url = inference_model(prompt,
+                                     num_of_images=num_of_images, steps=steps, width=width, height=height, model_id=model_id)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        return {"executionTime": execution_time, "images_url": images_url}
+    else:
+        start_time = time.time()
+        end_time = time.time()
+        execution_time = end_time - start_time
+        return {"execution_time": execution_time, "images_url": []}
 
 
 @task_prerun.connect
