@@ -1,5 +1,5 @@
 Flask==2.2.2
-flower==1.2.0
+flower
 Flask-CeleryExt==0.4.3
 celery
 redis
