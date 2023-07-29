@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:latest
+FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ RUN mkdir -p ~/.huggingface
 RUN echo -n $HUGGINGFACE_TOKEN > ~/.huggingface/token
 
 # Update system and install necessary system packages for git and wget
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y git wget python3-dev build-essential libgl1-mesa-glx && rm -rf /var/lib/apt/lists/*
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y git wget python3-dev build-essential libgl1-mesa-glx
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
 # Clone the repository
@@ -24,4 +24,4 @@ RUN autotrain setup --update-torch
 ENV PYTHONUNBUFFERED 1
 
 # Run celery worker when the container launches
-CMD celery -A app.celery worker --loglevel INFO -c 1 -Q ${QUEUE}
+CMD celery -A app.celery worker --loglevel INFO --pool solo -c 1 -Q ${QUEUE}

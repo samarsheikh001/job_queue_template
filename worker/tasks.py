@@ -42,11 +42,11 @@ def run_dreambooth(steps=None, base_model_name=None, subject_type=None, images_z
 
 
 @shared_task(name="inference-sdxl")
-def run_inference(prompt=None, steps=None, num_of_images=None, model_id=None, width=None, height=None, base_model_name=None, webhook_url=None):
+def run_inference(prompt=None, use_refiner=None, steps=None, num_of_images=None, model_id=None, width=None, height=None, base_model_name=None, webhook_url=None):
     if os.getenv('CELERY_ENV') != 'server':
         start_time = time.time()
-        images_url = inference_model(prompt,
-                                     num_of_images=num_of_images, steps=steps, width=width, height=height, model_id=model_id)
+        images_url = inference_model(prompt, model_id=model_id,
+                                     num_of_images=num_of_images, steps=steps, width=width, height=height, use_refiner=use_refiner)
         end_time = time.time()
         execution_time = end_time - start_time
         return {"executionTime": execution_time, "images_url": images_url}
@@ -107,3 +107,9 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
 #     images_zip="https://firebasestorage.googleapis.com/v0/b/copykitties-avatar.appspot.com/o/bhumika_aurora.zip?alt=media&token=d0fe3b22-6a59-43e5-ab73-901c60bf0bfe",
 #     webhook_url="http://127.0.0.1:8000/webhook"
 # )
+
+# prompt = "746ee5c870e14b20ad32b49585da9b9f portrait, high quality"
+# model_id = "746ee5c870e14b20ad32b49585da9b9f"
+
+# run_inference(prompt, use_refiner=True, steps=30, num_of_images=4,
+#               model_id=None, width=1024, height=1024, base_model_name=None, webhook_url=None)

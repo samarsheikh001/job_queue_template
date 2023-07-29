@@ -28,12 +28,11 @@ def generate_base_images(prompt: str, num_images: int, model_id: str, steps: int
 
 
 def get_inputs(prompt, width: int, height: int, batch_size=1, num_inference_steps: int = 50):
-    batch_size = 10
     seeds = [random.randint(1, 2**32 - 1) for _ in range(batch_size)]
     generator = [torch.Generator("cuda").manual_seed(seed)
                  for seed in seeds]
     prompts = batch_size * [prompt]
-    return {"prompt": prompts, "generator": generator, "num_inference_steps": num_inference_steps, "output_type": "latent", "width": width, "height": height}
+    return {"prompt": prompts, "generator": generator, "num_inference_steps": num_inference_steps, "width": width, "height": height}
 
 
 def refine_images(prompt, base_images):
@@ -41,23 +40,27 @@ def refine_images(prompt, base_images):
         "stabilityai/stable-diffusion-xl-refiner-1.0", torch_dtype=torch.float16, use_safetensors=True, variant="fp16")
     pipe.to("cuda")
 
-    generated_images_urls = []
+    refined_images = []
     for image in base_images:
-        images = pipe(prompt=prompt, image=image).images
-        image_url = upload_image_and_get_public_url(images[0])
-        generated_images_urls.append(image_url)
-    return generated_images_urls
+        image = pipe(prompt=prompt, image=image).images[0]
+        refined_images.append(image)
+    return refined_images
 
 
-def inference_model(prompt, model_id, num_of_images, steps, width, height):
+def inference_model(prompt, model_id, num_of_images, steps, width, height, use_refiner):
     if not os.path.exists('temp'):
         os.makedirs('temp')
     if model_id is not None:
         download_file_from_s3(
             f"{model_id}.safetensors", f"temp/{model_id}.safetensors")
-    base_images = generate_base_images(
+    generated_images = generate_base_images(
         prompt=prompt, num_images=num_of_images, model_id=model_id, steps=steps, width=width, height=height)
-    images_url = refine_images(base_images=base_images,
-                               prompt=prompt)
+    if use_refiner:
+        generated_images = refine_images(base_images=generated_images,
+                                         prompt=prompt)
+    images_urls = []
+    for image in generated_images:
+        uploaded_image_url = upload_image_and_get_public_url(image)
+        images_urls.append(uploaded_image_url)
     delete_file_or_folder("temp")
-    return images_url
+    return images_urls
