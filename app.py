@@ -39,5 +39,22 @@ def webhook():
     return jsonify({'response': 'Webhook received'}), 200
 
 
+@app.route('/tasks_status', methods=['GET'])
+def get_tasks_status():
+    i = celery.control.inspect()
+
+    # Get active tasks
+    active_tasks = i.active()
+    if not active_tasks:
+        active_tasks = 'No active tasks'
+
+    # Get reserved (scheduled) tasks
+    reserved_tasks = i.reserved()
+    if not reserved_tasks:
+        reserved_tasks = 'No pending tasks'
+
+    return jsonify({'active_tasks': active_tasks, 'pending_tasks': reserved_tasks}), 200
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
