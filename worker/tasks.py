@@ -4,11 +4,11 @@ from celery.signals import task_postrun, task_prerun
 from celery import shared_task
 import time
 import os
-from worker.model_inferencing import inference_model
 
 # extract worker dependencies
 if os.getenv('CELERY_ENV') != 'server':
     from .model_training import cleanup, prepare_model, train_model
+    from worker.model_inferencing import inference_model
 
 
 @shared_task(name="test")
