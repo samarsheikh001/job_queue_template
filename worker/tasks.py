@@ -21,19 +21,18 @@ def run_test(steps=None, base_model_name=None, subject_type=None, images_zip=Non
 
 
 @shared_task(name="train-sdxl-dreambooth")
-def run_dreambooth(steps=None, base_model_name=None, subject_type=None, images_zip=None, webhook_url=None):
+def run_dreambooth(base_model_name=None, steps=None, instance_prompt=None, class_prompt=None, images_zip=None, webhook_url=None):
     if os.getenv('CELERY_ENV') != 'server':
         start_time = time.time()
         if not os.path.exists('temp'):
             os.makedirs('temp')
-        subject_identifier, instance_prompt = prepare_model(
-            subject_type=subject_type, images_zip=images_zip)
-        train_model(base_model_name, subject_identifier,
-                    instance_prompt, steps)
-        cleanup(subject_identifier, steps)
+        model_id = prepare_model(images_zip=images_zip)
+        train_model(base_model_name=base_model_name, model_id=model_id,
+                    instance_prompt=instance_prompt, class_prompt=class_prompt, steps=steps)
+        cleanup(model_id=model_id)
         end_time = time.time()
         execution_time = end_time - start_time
-        return {"subject_identifier": subject_identifier, "executionTime": execution_time}
+        return {"model_id": model_id, "executionTime": execution_time}
     else:
         start_time = time.time()
         end_time = time.time()
@@ -101,9 +100,10 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
 
 # # test
 # run_dreambooth(
-#     steps=100,
+#     steps=5,
 #     base_model_name="runwayml/stable-diffusion-v1-5",
-#     subject_type="person",
+#     instance_prompt="a boy samar",
+#     class_prompt="a boy",
 #     images_zip="https://firebasestorage.googleapis.com/v0/b/copykitties-avatar.appspot.com/o/bhumika_aurora.zip?alt=media&token=d0fe3b22-6a59-43e5-ab73-901c60bf0bfe",
 #     webhook_url="http://127.0.0.1:8000/webhook"
 # )
