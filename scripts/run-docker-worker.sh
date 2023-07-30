@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker run --gpus all --env-file .env getrektx/sdxl-dreambooth-worker:latest
+docker run --gpus all --env-file .env.production getrektx/sdxl-dreambooth-worker:latest

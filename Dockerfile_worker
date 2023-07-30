@@ -24,4 +24,4 @@ RUN autotrain setup --update-torch
 ENV PYTHONUNBUFFERED 1
 
 # Run celery worker when the container launches
-CMD celery -A app.celery worker --loglevel INFO --pool solo -c 1 -Q ${QUEUE}
+CMD celery -A app.celery worker --loglevel INFO -c 1 -f celery.logs -Q ${QUEUE}
