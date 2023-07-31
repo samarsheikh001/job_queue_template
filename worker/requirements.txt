@@ -1,7 +1,7 @@
+flask_celeryext
 transformers
 boto3
 python-dotenv
 flask
 redis
 celery
-flask_celeryext
