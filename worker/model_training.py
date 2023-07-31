@@ -27,6 +27,7 @@ def train_model(base_model_name: str, model_id: str, instance_prompt: str, class
         gradient_accumulation=4,
         lr=1e-4,
         xl=True,
+        xformers=True,
     )
     train(args)
     # args = DreamBoothTrainingParams(
