@@ -98,10 +98,10 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
         print(f"Failed to send request: {e}")
 
 
-# # test
+# test
 # run_dreambooth(
 #     steps=5,
-#     base_model_name="runwayml/stable-diffusion-v1-5",
+#     base_model_name="stabilityai/stable-diffusion-xl-base-1.0",
 #     instance_prompt="a boy samar",
 #     class_prompt="a boy",
 #     images_zip="https://firebasestorage.googleapis.com/v0/b/copykitties-avatar.appspot.com/o/bhumika_aurora.zip?alt=media&token=d0fe3b22-6a59-43e5-ab73-901c60bf0bfe",
