@@ -14,35 +14,35 @@ def prepare_model(images_zip) -> str:
 
 
 def train_model(base_model_name: str, model_id: str, instance_prompt: str, class_prompt: str, steps: int):
-    args = DreamBoothTrainingParams(
-        model=base_model_name,
-        output='temp/output/',
-        image_path=f'temp/{model_id}/',
-        prompt=instance_prompt,
-        class_prompt=class_prompt,
-        resolution=1024,
-        batch_size=1,
-        num_steps=steps,
-        fp16=True,
-        gradient_accumulation=4,
-        lr=1e-4
-    )
-    train(args)
-    # cmd = [
-    #     'autotrain', 'dreambooth',
-    #     '--model', base_model_name,
-    #     '--output', 'temp/output/',
-    #     '--image-path', f'temp/{model_id}/',
-    #     '--prompt', instance_prompt,
-    #     '--class-prompt', class_prompt,
-    #     '--resolution', '1024',
-    #     '--batch-size', '1',
-    #     '--num-steps', str(steps),
-    #     '--fp16',
-    #     '--gradient-accumulation', '4',
-    #     '--lr', '1e-4'
-    # ]
-    # subprocess.run(cmd)
+    # args = DreamBoothTrainingParams(
+    #     model=base_model_name,
+    #     output='temp/output/',
+    #     image_path=f'temp/{model_id}/',
+    #     prompt=instance_prompt,
+    #     class_prompt=class_prompt,
+    #     resolution=1024,
+    #     batch_size=1,
+    #     num_steps=steps,
+    #     fp16=True,
+    #     gradient_accumulation=4,
+    #     lr=1e-4
+    # )
+    # train(args)
+    cmd = [
+        'autotrain', 'dreambooth',
+        '--model', base_model_name,
+        '--output', 'temp/output/',
+        '--image-path', f'temp/{model_id}/',
+        '--prompt', instance_prompt,
+        '--class-prompt', class_prompt,
+        '--resolution', '1024',
+        '--batch-size', '1',
+        '--num-steps', str(steps),
+        '--fp16',
+        '--gradient-accumulation', '4',
+        '--lr', '1e-4'
+    ]
+    subprocess.run(cmd)
 
 
 def cleanup(model_id: str):
