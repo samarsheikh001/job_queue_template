@@ -17,7 +17,7 @@ class BaseConfig:
     CELERYD_PREFETCH_MULTIPLIER = 1
     CELERYD_TIME_LIMIT = 2700
     # CELERY_TASK_ALWAYS_EAGER = True
-    # CELERY_TASK_REJECT_ON_WORKER_LOST = True
+    CELERY_TASK_REJECT_ON_WORKER_LOST = True
 
 
 class DevelopmentConfig(BaseConfig):
