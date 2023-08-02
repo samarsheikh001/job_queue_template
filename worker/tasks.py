@@ -32,7 +32,11 @@ def run_dreambooth(base_model_name=None, steps=None, instance_prompt=None, class
         cleanup(model_id=model_id)
         end_time = time.time()
         execution_time = end_time - start_time
-        return {"model_id": model_id, "executionTime": execution_time}
+        return {"model_id": model_id, "executionTime": execution_time, "inputs": {
+            "base_model_name": base_model_name, "steps": steps,
+            "instance_prompt": instance_prompt, "class_prompt": class_prompt,
+            "images_zip": images_zip, "webhook_url": webhook_url
+        }}
     else:
         start_time = time.time()
         end_time = time.time()
@@ -61,7 +65,7 @@ def task_prerun_handler(sender=None, task_id=None, task=None, args=None, kwargs=
     # Extract webhook_url from the task keyword arguments
     webhook_url = kwargs.get('webhook_url')
     data = {"text": "Task started.",
-            "task_result": None, "task_status": "STARTED", "task_id": task_id}
+            "task_result": None, "task_status": "STARTED", "task_id": task_id, "inputs": kwargs}
 
     try:
         requests.post(webhook_url, json=data)
@@ -82,11 +86,11 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
         print("An error occurred during task execution")
         # Hit the webhook
         data = {"text": "Task failed.",
-                "task_result": str(retval), "task_status": state, "task_id": task_id}
+                "task_result": str(retval), "task_status": state, "task_id": task_id, "inputs": kwargs}
     else:
         # Hit the webhook
         data = {"text": "Task completed successfully.",
-                "task_result": retval, "task_status": state, "task_id": task_id}
+                "task_result": retval, "task_status": state, "task_id": task_id, "inputs": kwargs}
 
     try:
         response = requests.post(webhook_url, json=data)
