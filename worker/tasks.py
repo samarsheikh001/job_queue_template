@@ -1,18 +1,22 @@
 
+from PIL import Image
 import requests
 from celery.signals import task_postrun, task_prerun
 from celery import shared_task
 import time
 import os
 
+from worker.utils.upload import upload_image_and_get_public_url
+
 # extract worker dependencies
 if os.getenv('CELERY_ENV') != 'server':
     from .model_training import cleanup, prepare_model, train_model
-    from worker.model_inferencing import inference_model, img_to_img
+    from worker.model_inferencing import ImageGenerator
+    from worker.utils.utils import delete_file_or_folder
 
 
 @shared_task(name="test")
-def run_test(steps=None, base_model_name=None, subject_type=None, images_zip=None, webhook_url=None):
+def run_test(webhook_url=None):
     start_time = time.time()
     end_time = time.time()
     execution_time = end_time - start_time
@@ -32,7 +36,8 @@ def run_dreambooth(base_model_name=None, steps=None, instance_prompt=None, class
         cleanup(model_id=model_id)
         end_time = time.time()
         execution_time = end_time - start_time
-        return {"model_id": model_id, "executionTime": execution_time, "inputs": {
+        model_download_url = f"https://usc1.contabostorage.com/95ab9410ae4e43479286fec3395fdfe9:dreambooth/models/{model_id}.safetensors"
+        return {"model_id": model_id, "model_download_url": model_download_url, "executionTime": execution_time, "inputs": {
             "base_model_name": base_model_name, "steps": steps,
             "instance_prompt": instance_prompt, "class_prompt": class_prompt,
             "images_zip": images_zip, "webhook_url": webhook_url
@@ -45,36 +50,35 @@ def run_dreambooth(base_model_name=None, steps=None, instance_prompt=None, class
 
 
 @shared_task(name="inference")
-def run_inference(prompt=None, use_refiner=None, steps=None, num_of_images=None, model_id=None, width=None, height=None, base_model_name=None, webhook_url=None):
+def inference(operation=None, prompt=None, num_outputs=None, width=None, height=None, n_steps=None, high_noise_frac=None, image_url=None, mask_url=None, prompt_strength=None, webhook_url=None):
     if os.getenv('CELERY_ENV') != 'server':
         start_time = time.time()
-        images_url = inference_model(prompt, model_id=model_id,
-                                     num_of_images=num_of_images, steps=steps, width=width, height=height, use_refiner=use_refiner)
+        if not os.path.exists('temp'):
+            os.makedirs('temp')
+
+        img_gen = ImageGenerator(model_id=None)
+        generated_images_url = []
+        if operation == "text_to_img":
+            text_to_text_images = img_gen.generate_base_images(
+                prompt, num_outputs, n_steps, high_noise_frac, width, height)
+            generated_images_url = text_to_text_images
+        elif operation == "inpainting":
+            inpainting_images = img_gen.generate_inpainting_image(
+                prompt, num_outputs, n_steps, image_url, mask_url)
+            generated_images_url = inpainting_images
+        elif operation == "img_to_img":
+            img_to_imgs = img_gen.generate_image_to_image(
+                prompt_strength, prompt, num_outputs, n_steps, high_noise_frac, image_url)
+            generated_images_url = img_to_imgs
+        delete_file_or_folder("temp")
         end_time = time.time()
         execution_time = end_time - start_time
-        return {"executionTime": execution_time, "images_url": images_url}
+        return {"executionTime": execution_time, "inputs": {}, "data": generated_images_url}
     else:
         start_time = time.time()
         end_time = time.time()
         execution_time = end_time - start_time
-        return {"execution_time": execution_time, "images_url": []}
-
-
-@shared_task(name="img-to-img")
-def run_img_to_img(prompt=None, use_refiner=None, steps=None, num_of_images=None, model_id=None, width=None, height=None, base_model_name=None, webhook_url=None):
-    if os.getenv('CELERY_ENV') != 'server':
-        start_time = time.time()
-        prompt = "A majestic tiger sitting on a bench"
-        url = "https://huggingface.co/datasets/patrickvonplaten/images/resolve/main/aa_xl/000000009.png"
-        images_url = img_to_img(url, prompt, 4)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        return {"executionTime": execution_time, "images_url": images_url}
-    else:
-        start_time = time.time()
-        end_time = time.time()
-        execution_time = end_time - start_time
-        return {"execution_time": execution_time, "images_url": []}
+        return execution_time
 
 
 @task_prerun.connect
@@ -119,32 +123,41 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
         print(f"Failed to send request: {e}")
 
 
-# test
+# # test
 # run_dreambooth(
-#     steps=5,
-#     base_model_name="stabilityai/stable-diffusion-xl-base-1.0",
+#     steps=500,
+#     base_model_name="cgburgos/sdxl-1-0-base",
 #     instance_prompt="a boy samar",
 #     class_prompt="a boy",
 #     images_zip="https://firebasestorage.googleapis.com/v0/b/copykitties-avatar.appspot.com/o/bhumika_aurora.zip?alt=media&token=d0fe3b22-6a59-43e5-ab73-901c60bf0bfe",
 #     webhook_url="http://127.0.0.1:8000/webhook"
 # )
 
-# prompt = "746ee5c870e14b20ad32b49585da9b9f portrait, high quality"
-# model_id = "746ee5c870e14b20ad32b49585da9b9f"
+# # Generate base images
+# operation = "text_to_img"
 
-# run_inference(prompt, use_refiner=True, steps=30, num_of_images=4,
-#               model_id=None, width=1024, height=1024, base_model_name=None, webhook_url=None)
+# prompt = 'moh man, high quality'
+# num_outputs = 4
+# width = 1024
+# height = 1024
+# n_steps = 100
+# high_noise_frac = 1
 
-# prompt = "A majestic tiger sitting on a bench"
-# url = "https://huggingface.co/datasets/patrickvonplaten/images/resolve/main/aa_xl/000000009.png"
-# img_to_img(url, prompt, 4)
-prompt = "746ee5c870e14b20ad32b49585da9b9f portrait, high quality"
-negative_prompt = "ugly"
-model_id = "746ee5c870e14b20ad32b49585da9b9f"
+# prompt_strength = 0.8
 
-# run_inference(prompt, use_refiner=True, steps=30, num_of_images=4,
-#               model_id=None, width=1024, height=1024, base_model_name=None, webhook_url=None)
-
-inference_model(prompt=prompt, negative_prompt=negative_prompt,
-                image_url=None, mask_image_url=None, width=1024, height=1024, num_outputs=4, scheduler=None,
-                num_inference_steps=25, guidance_scale=1, prompt_strength=0.8, seed=1, refine_steps=20, model_id=None)
+# img_to_img_url = "https://firebasestorage.googleapis.com/v0/b/copykitties-avatar.appspot.com/o/prompthero-prompt-9804e3f26f1.png?alt=media&token=05a699f3-23ed-4564-85ba-21cb7cebae11"
+# image_url = "https://raw.githubusercontent.com/CompVis/latent-diffusion/main/data/inpainting_examples/overture-creations-5sI6fQgYIuo.png"
+# mask_url = "https://raw.githubusercontent.com/CompVis/latent-diffusion/main/data/inpainting_examples/overture-creations-5sI6fQgYIuo_mask.png"
+# inference(operation=operation,
+#           prompt=prompt,
+#           num_outputs=num_outputs,
+#           width=width,
+#           height=height,
+#           n_steps=n_steps,
+#           high_noise_frac=high_noise_frac,
+#           image_url=img_to_img_url,
+#           mask_url=mask_url,
+#           prompt_strength=prompt_strength,
+#           webhook_url="")
+# for i, image in enumerate(images):
+#     image.save(f"image_{i}.png")

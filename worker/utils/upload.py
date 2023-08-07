@@ -58,9 +58,12 @@ def upload_image_and_get_public_url(pil_image):
     try:
         upload_image_to_s3(pil_image, f"{s3_key}.png")
         print("Image uploaded successfully!")
+        file_url = f"{os.getenv('S3_ENDPOINT_URL')}/{bucket_name}/{s3_key}"
+        file_url = f"https://usc1.contabostorage.com/95ab9410ae4e43479286fec3395fdfe9:dreambooth/{bucket_name}/{s3_key}.png"
         print(
-            f"Image made public. URL: https://usc1.contabostorage.com/95ab9410ae4e43479286fec3395fdfe9:models/{bucket_name}/{s3_key}.png")
-        return f"https://usc1.contabostorage.com/95ab9410ae4e43479286fec3395fdfe9:models/{bucket_name}/{s3_key}.png"
+            f"Image made public. URL: f{file_url}")
+        return file_url
+        # return f"https://usc1.contabostorage.com/95ab9410ae4e43479286fec3395fdfe9:models/{bucket_name}/{s3_key}.png"
 
     except Exception as e:
         print(f"Error uploading image or making it public: {e}")

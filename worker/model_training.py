@@ -1,4 +1,3 @@
-import subprocess
 from worker.utils.upload import upload_file_to_s3
 
 from worker.utils.utils import delete_file_or_folder, download_and_extract_zip, generate_identifier
