@@ -4,8 +4,6 @@ from celery import shared_task
 import time
 import os
 
-from worker.utils.upload import upload_image_and_get_public_url
-
 # extract worker dependencies
 if os.getenv('CELERY_ENV') != 'server':
     from .model_training import cleanup, prepare_model, train_model
