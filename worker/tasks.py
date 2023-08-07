@@ -1,6 +1,6 @@
 import requests
-from celery.signals import task_postrun, task_prerun
-from celery import shared_task
+from celery.signals import task_postrun, task_prerun, task_retry
+from celery import shared_task, states
 import time
 import os
 
@@ -20,9 +20,13 @@ def run_test(webhook_url=None):
     return {"task_name": "test", "execution_time": execution_time}
 
 
-@shared_task(name="train-dreambooth-lora")
-def run_dreambooth(base_model_name=None, steps=None, instance_prompt=None, class_prompt=None, images_zip=None, webhook_url=None):
+@shared_task(name="train-dreambooth-lora", bind=True)
+def run_dreambooth(self, base_model_name=None, steps=None, instance_prompt=None, class_prompt=None, images_zip=None, webhook_url=None):
     if os.getenv('CELERY_ENV') != 'server':
+        result = self.AsyncResult(self.request.id)
+        if result.state == states.SUCCESS:
+            print("Task already succeeded, skipping execution")
+            return result.result
         start_time = time.time()
         if not os.path.exists('temp'):
             os.makedirs('temp')
@@ -108,6 +112,23 @@ def task_done(sender=None, task_id=None, task=None, args=None, state=None, kwarg
         # Hit the webhook
         data = {"text": "Task completed successfully.",
                 "task_result": retval, "task_status": state, "task_id": task_id, "inputs": kwargs}
+
+    try:
+        response = requests.post(webhook_url, json=data)
+        # Handle the response if needed
+        if response.status_code != 200:
+            print(
+                f'Error: Request to webhook returned an error {response.status_code}, the response is:\n{response.text}')
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send request: {e}")
+
+
+@task_retry.connect
+def task_retry_handler(sender=None, request=None, reason=None, einfo=None, **kwargs):
+    # Extract webhook_url from the task request
+    webhook_url = request.kwargs.get('webhook_url')
+    data = {"text": "Task is being retried.",
+            "task_status": "RETRY", "task_id": request.id, "inputs": request.kwargs}
 
     try:
         response = requests.post(webhook_url, json=data)
