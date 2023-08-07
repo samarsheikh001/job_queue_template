@@ -1,5 +1,3 @@
-
-from PIL import Image
 import requests
 from celery.signals import task_postrun, task_prerun
 from celery import shared_task
