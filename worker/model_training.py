@@ -24,6 +24,7 @@ def train_model(base_model_name: str, model_id: str, instance_prompt: str, class
         num_steps=steps,
         fp16=True,
         gradient_accumulation=4,
+        gradient_checkpointing=True,
         lr=1e-4,
         xl=True,
         xformers=True,
