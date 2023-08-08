@@ -50,13 +50,13 @@ def run_dreambooth(self, base_model_name=None, steps=None, instance_prompt=None,
 
 
 @shared_task(name="inference")
-def inference(operation=None, prompt=None, num_outputs=None, width=None, height=None, n_steps=None, high_noise_frac=None, image_url=None, mask_url=None, prompt_strength=None, webhook_url=None):
+def inference(model_id=None, operation=None, prompt=None, num_outputs=None, width=None, height=None, n_steps=None, high_noise_frac=None, image_url=None, mask_url=None, prompt_strength=None, webhook_url=None):
     if os.getenv('CELERY_ENV') != 'server':
         start_time = time.time()
         if not os.path.exists('temp'):
             os.makedirs('temp')
 
-        img_gen = ImageGenerator(model_id=None)
+        img_gen = ImageGenerator(model_id=model_id)
         generated_images_url = []
         if operation == "text_to_img":
             text_to_text_images = img_gen.generate_base_images(
